@@ -3,20 +3,9 @@ var app = express();
 
 //provided by heroku process.env.PORT
 var PORT = process.env.PORT || 3000;
+var todos = [];
 
-var todos = [{
-	id: 1,
-	description: 'Meet Jenny for Lunch',
-	completed: false
-}, {
-	id: 2,
-	description: 'Go to market',
-	completed: false
-}, {
-	id: 3,
-	description: 'Complete planned cards',
-	completed: true
-}]
+var todoNextId = 1;
 
 
 app.get('/', function (req, res) {
