@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+var _ = require('underscore');
 
 //provided by heroku process.env.PORT
 var PORT = process.env.PORT || 3000;
@@ -23,28 +24,36 @@ app.get('/todos', function (req, res) {
 //GET Request /todos/:id 
 app.get('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id);
-	var matchedTodo;
+	var matchedTodo = _.findWhere(todos, {id: todoId});
 
-	todos.forEach(function (todo) {
-		if (todoId === todo.id) {
-			matchedTodo = todo;
-		}
-	});
+	// var matchedTodo;
+	// todos.forEach(function (todo) {
+	// 	if (todoId === todo.id) {
+	// 		matchedTodo = todo;
+	// 	}
+	// });
 
 	if (matchedTodo) {
 		res.json(matchedTodo);
 	} else {
 		res.status(404).send();
-		res.send('404 Error ' + todoId + ' not found!');
 	}
-
-	res.send('Asking for todo with id of ' + req.params.id);
-
 
 });
 
 //POST /todos/
 app.post('/todos', function (req, res) {
+
+	var body = _.pick(req.body, 'description', 'completed');
+
+	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+
+		//Status 400 request can't be completed because bad data was provided
+		return res.status(400).send();
+
+	}
+
+	body.description = body.description.trim();
 	// var body = req.body;
 	// var todo = {
 	// 	id: 0,
@@ -59,13 +68,13 @@ app.post('/todos', function (req, res) {
 	// console.log(todos);
 	// console.log('Decription: ' + body.description);
 
-	var body = req.body;
-
+	//add id Field
 	body.id = todoNextId++;
 
+	//push onto array
 	todos.push(body);
-
 	res.json(todos);
+
 });
 
 
