@@ -20,7 +20,7 @@ app.get('/todos', function (req, res) {
 });
 
 
-//GET Request /todos/:id
+//GET Request /todos/:id 
 app.get('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id);
 	var matchedTodo;
