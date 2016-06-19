@@ -23,7 +23,7 @@ app.get('/todos', function (req, res) {
 
 //GET Request /todos/:id 
 app.get('/todos/:id', function (req, res) {
-	var todoId = parseInt(req.params.id);
+	var todoId = parseInt(req.params.id, 10);
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 
 	// var matchedTodo;
@@ -54,19 +54,6 @@ app.post('/todos', function (req, res) {
 	}
 
 	body.description = body.description.trim();
-	// var body = req.body;
-	// var todo = {
-	// 	id: 0,
-	// 	description: '',
-	// 	completed: false
-	// }
-
-	// console.log(todos.length);
-	// todo.id = todos.length + 1;
-	// todo.description = body.description;
-	// todos.push(todo);
-	// console.log(todos);
-	// console.log('Decription: ' + body.description);
 
 	//add id Field
 	body.id = todoNextId++;
@@ -74,6 +61,21 @@ app.post('/todos', function (req, res) {
 	//push onto array
 	todos.push(body);
 	res.json(todos);
+
+});
+
+
+app.delete('/todos/:id', function (req, res) {
+
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if (! matchedTodo) {
+		res.status(404).json({"Error": "No todo found with id: " + todoId});
+	} else {
+		todos = _.without(todos, matchedTodo)
+		res.json(matchedTodo);
+	}
 
 });
 
