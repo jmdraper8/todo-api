@@ -152,6 +152,7 @@ app.put('/todos/:id', function(req, res) {
 			} else {
 				return res.status(400).send();
 			}
+
 		} else {
 			res.status(404).json({
 				"Error": "No todo found with id: " + todoId
@@ -161,11 +162,6 @@ app.put('/todos/:id', function(req, res) {
 		res.status(400).json(e);
 	});
 
-
-// //extend updates matchedTodo with validAttributes
-// //Objhects are passed by reference, so we dont haver to update the array
-// _.extend(matchedTodo, validAttributes);
-// res.json(matchedTodo);
 });
 
 db.sequelize.sync().then(function () {
