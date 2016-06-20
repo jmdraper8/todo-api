@@ -78,20 +78,20 @@ app.delete('/todos/:id', function(req, res) {
 
 	var todoId = parseInt(req.params.id, 10);
 
-	db.todo.findById(todoId).then(function (todo) {
-		if (!!todo) {
-			//db.todo.destroy(todo); --Deletes the full database
-			db.todo.destroy({
-				where: {
-					id: todoId
-				}
-			});
-			res.json(todo.toJSON());				
-		} else {
-			res.status(404).send();
+	db.todo.destroy({
+		where: {
+			id: todoId
 		}
-	}, function (e) {
-		res.status(400).json(e);
+	}).then(function (rowsdeleted) {
+		if (rowsdeleted === 0) {
+			res.status(404).json({
+				error: 'No todo with id: ' + todoId
+			});
+		} else {
+			res.status(204).send();
+		}
+	}, function () {
+		res.status(500).send();
 	});
 });
 
