@@ -96,69 +96,31 @@ app.delete('/todos/:id', function(req, res) {
 });
 
 //Update - using Http PUT 
-app.put('/todos/:id', function(req, res) {
+app.put('/todos/:id', function (req, res) {
 
 	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
-	var validAttributes = {};
+	var attributes = {};
 
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
+	}
 
-	db.todo.findById(todoId).then(function(todo) {
-		if (!!todo) {
-			//Update code
-			//body.hasOwnProperty('completed')
-			if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-				validAttributes.completed = body.completed;
-			} else if (body.hasOwnProperty('completed')) {
-				// Bad property is there but not a valid value i.e not a boolean
-				return res.status(400).send();
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description;
+	}
 
-			}
-
-			console.log(todoId);
-
-			if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-				validAttributes.description = body.description;
-
-				db.todo.update({
-					description: validAttributes.description,
-					completed: validAttributes.completed
-				}, {
-					where: {
-						id: todoId
-					}
-				}).then(function (todo) {
-					res.json('Successfully updated record ' + todoId);
-				}, function (e) {
-					return res.status(400).send();
-				});
-
-			} else if (body.hasOwnProperty('description')) {
-				return res.status(400).send();
-			}
-
-			if (typeof validAttributes.completed !== 'Undefined') {
-				db.todo.update({
-					completed: validAttributes.completed
-				}, {
-					where: {
-						id: todoId
-					}
-				}).then(function (todo) {
-					res.json('Successfully updated record ' + todoId);
-				}, function(e) {
-					return res.status(400).send();
-				});
-			} else {
-				return res.status(400).send();
-			}
-
+	db.todo.findById(todoId).then(function (todo) {
+		if (todo) {
+			return todo.update(attributes);
 		} else {
-			res.status(404).json({
-				"Error": "No todo found with id: " + todoId
-			});
+			res.status(404).send();
 		}
-	}, function(e) {
+	}, function () {
+		res.status(500).send();
+	}).then(function (todo) {
+		res.json(todo.toJSON());
+	}, function (e) {
 		res.status(400).json(e);
 	});
 
