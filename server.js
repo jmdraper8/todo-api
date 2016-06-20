@@ -96,42 +96,76 @@ app.delete('/todos/:id', function(req, res) {
 });
 
 //Update - using Http PUT 
-app.put('/todos/:id', function (req, res) {
+app.put('/todos/:id', function(req, res) {
 
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	});
-
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
 
-	if (!matchedTodo) {
-		return res.status(404).json({
-			"Error": "No todo found with id: " + todoId
-		});
-	}
 
-	//body.hasOwnProperty('completed')
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		// Bad property is there but not a valid value i.e not a boolean
-		return res.status(400).send();
+	db.todo.findById(todoId).then(function(todo) {
+		if (!!todo) {
+			//Update code
+			//body.hasOwnProperty('completed')
+			if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+				validAttributes.completed = body.completed;
+			} else if (body.hasOwnProperty('completed')) {
+				// Bad property is there but not a valid value i.e not a boolean
+				return res.status(400).send();
 
-	}
+			}
 
-	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-		validAttributes.description = body.description;
-	} else if (body.hasOwnProperty('description')) {
-		return res.status(400).send();
-	}
+			console.log(todoId);
 
-	//extend updates matchedTodo with validAttributes
-	//Objhects are passed by reference, so we dont haver to update the array
-	_.extend(matchedTodo, validAttributes);
-	res.json(matchedTodo);
+			if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+				validAttributes.description = body.description;
 
+				db.todo.update({
+					description: validAttributes.description,
+					completed: validAttributes.completed
+				}, {
+					where: {
+						id: todoId
+					}
+				}).then(function (todo) {
+					res.json('Successfully updated record ' + todoId);
+				}, function (e) {
+					return res.status(400).send();
+				});
+
+			} else if (body.hasOwnProperty('description')) {
+				return res.status(400).send();
+			}
+
+			if (typeof validAttributes.completed !== 'Undefined') {
+				db.todo.update({
+					completed: validAttributes.completed
+				}, {
+					where: {
+						id: todoId
+					}
+				}).then(function (todo) {
+					res.json('Successfully updated record ' + todoId);
+				}, function(e) {
+					return res.status(400).send();
+				});
+			} else {
+				return res.status(400).send();
+			}
+		} else {
+			res.status(404).json({
+				"Error": "No todo found with id: " + todoId
+			});
+		}
+	}, function(e) {
+		res.status(400).json(e);
+	});
+
+
+// //extend updates matchedTodo with validAttributes
+// //Objhects are passed by reference, so we dont haver to update the array
+// _.extend(matchedTodo, validAttributes);
+// res.json(matchedTodo);
 });
 
 db.sequelize.sync().then(function () {
