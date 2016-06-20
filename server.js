@@ -80,7 +80,7 @@ app.delete('/todos/:id', function(req, res) {
 
 	db.todo.findById(todoId).then(function (todo) {
 		if (!!todo) {
-			//db.todo.destroy(todo);
+			//db.todo.destroy(todo); --Deletes the full database
 			db.todo.destroy({
 				where: {
 					id: todoId
@@ -93,22 +93,6 @@ app.delete('/todos/:id', function(req, res) {
 	}, function (e) {
 		res.status(400).json(e);
 	});
-
-
-
-	// var matchedTodo = _.findWhere(todos, {
-	// 	id: todoId
-	// });
-
-	// if (!matchedTodo) {
-	// 	res.status(404).json({
-	// 		"Error": "No todo found with id: " + todoId
-	// 	});
-	// } else {
-	// 	todos = _.without(todos, matchedTodo)
-	// 	res.json(matchedTodo);
-	// }
-
 });
 
 //Update - using Http PUT 
