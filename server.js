@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var _ = require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcrypt');
 
 //provided by heroku process.env.PORT
 var PORT = process.env.PORT || 3000;
@@ -126,7 +127,7 @@ app.put('/todos/:id', function (req, res) {
 
 });
 
-//POST /todos/
+//POST /users/
 app.post('/users', function (req, res) {
 
 	var body = _.pick(req.body, 'email', 'password');
@@ -135,6 +136,31 @@ app.post('/users', function (req, res) {
 		res.json(users.toPublicJSON());
 	}, function (e) {
 		res.status(400).json(e);
+	});
+
+});
+
+//POST /users/login
+app.post('/users/login', function (req, res) {
+
+	var body = _.pick(req.body, 'email', 'password');
+
+	if (typeof body.email !== 'string' && typeof body.password !== 'string') {
+		res.status(400).send();
+	}
+
+	// find user
+	db.user.findOne({
+		where: {
+			email: body.email
+		}
+	}).then(function (user) {
+		if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
+			return res.status(401).send();
+		}
+		res.json(user.toPublicJSON());		
+	}, function (e) {
+		res.status(500).send();
 	});
 
 });
